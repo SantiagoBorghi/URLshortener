@@ -10,13 +10,13 @@ namespace URLshortener.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Required]
-        [StringLength(50)]
         public string? ShortUrls { get; set; }
         [Required]
-        [StringLength(500)]
-        public string? LongUrl { get; set; } = string.Empty;
-        public User User { get; set; }
+        public string? LongUrls { get; set; }
+        [Required]
         public int? UsageCount { get; set; }
+        [Required]
         public Categories Category { get; set; }
+        public string UserId { get; set; }
     }
 }

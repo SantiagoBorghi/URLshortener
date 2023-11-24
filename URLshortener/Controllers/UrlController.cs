@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
+using System.Security.Claims;
 using URLshortener.Data;
 using URLshortener.Entities;
+using URLshortener.Helpers;
 using URLshortener.Models;
-using UrlHelper = URLshortener.Helpers.UrlHelper;
 
-namespace URLshortener.Controllers
+namespace UrlShorterer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -20,38 +20,43 @@ namespace URLshortener.Controllers
             _UrlContext = UrlContext;
         }
 
-        [HttpGet("GetUrl")]
+        [HttpGet("Get")]
+
         public IActionResult GetUrl(string ClientUrl)
         {
-            var urlFromClient = _UrlContext.Urls.FirstOrDefault(x => x.ShortUrls == ClientUrl);
+            var urlEntity = _UrlContext.Urls.FirstOrDefault(x => x.ShortUrls == ClientUrl);
 
-            if (urlFromClient == null)
+            if (urlEntity == null)
             {
-                return NotFound("URL not found");
+                return NotFound("La URL no existe");
             }
-            urlFromClient.UsageCount += 1;
+            urlEntity.UsageCount += 1;
             _UrlContext.SaveChanges();
-            return Ok(urlFromClient.LongUrl);
+            return Ok(urlEntity.LongUrls);
         }
 
         [HttpGet("GetByCategorias")]
+
         public IActionResult GetUrlsByCategory(Categories Category)
         {
             var urlsFounded = _UrlContext.Urls.Where(x => x.Category == Category).ToList();
 
-            var urlList = urlsFounded.Select(url => url.LongUrl).ToList();
+            var urlList = urlsFounded.Select(url => url.LongUrls).ToList();
             return Ok(urlList);
         }
 
+
         [HttpPost("Post")]
-        public IActionResult CreateNewURL(string urlShort, Categories category)
+        public IActionResult CreateNewURL(string newurl, Categories category)
         {
             var urlHelper = new UrlHelper();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var urlEntity = new Url()
             {
-                LongUrl = urlShort,
+                LongUrls = newurl,
                 ShortUrls = urlHelper.ShortenURL(),
-                Category = category
+                Category = category,
+                UserId = userId
             };
 
             _UrlContext.Urls.Add(urlEntity);
